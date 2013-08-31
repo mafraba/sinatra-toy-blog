@@ -1,10 +1,11 @@
 require 'sinatra/base'
 require 'ostruct'
 require 'time'
-require 'YAML'
+require 'YAML'
 
 class Blog < Sinatra::Base
   set :root, File.expand_path('../../', __FILE__)
+  set :articles, []
 
   # loop through all the article files
   Dir.glob "#{root}/articles/*.md" do |file|
@@ -22,5 +23,16 @@ class Blog < Sinatra::Base
     get "/#{article.slug}" do
       erb :post, :locals => { :article => article }
     end
+    # Add article to list of articles
+    articles << article
+  end
+
+  # Sort articles by date, display new articles first
+  articles.sort_by! { |article| article.date }
+  articles.reverse!
+
+  # Map the index view
+  get '/' do
+    erb :index
   end
 end
